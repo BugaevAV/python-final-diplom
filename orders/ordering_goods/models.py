@@ -56,7 +56,7 @@ class ProductInfo(models.Model):
         verbose_name = 'Информация о продукте'
         verbose_name_plural = 'Информационный список о продуктах'
         constraints = [models.UniqueConstraint(fields=['product', 'shop', 'external_id'],
-                                               name='unique_product_info')]
+                                               name='unique_product_info'),]
 
 class Parameter(models.Model):
     name = models.CharField(max_length=40, verbose_name='Название')
@@ -81,5 +81,5 @@ class ProductInfoParameter(models.Model):
         verbose_name = 'Параметр'
         verbose_name_plural = 'Список параметров'
         constraints = [models.UniqueConstraint(fields=['product_info', 'parameter'],
-                                               name='unique_product_parameter')]
+                                               name='unique_product_parameter'),]
 
