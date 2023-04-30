@@ -3,7 +3,6 @@ from users_auth.models import User
 from ordering_goods.models import ProductInfo
 
 
-
 STATE_CHOICES = (
     ('basket', 'Статус корзины'),
     ('new', 'Новый'),
@@ -32,6 +31,7 @@ class Contact(models.Model):
 
     def __str__(self):
         return f'{self.city} {self.street} {self.house}'
+
 
 class Order(models.Model):
     user = models.ForeignKey(User, verbose_name='Пользователь', related_name='orders',

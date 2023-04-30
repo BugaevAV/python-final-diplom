@@ -80,11 +80,13 @@ class ConfirmEmailToken(models.Model):
     def save(self, *args, **kwargs):
         if not self.key:
             self.key = self.generate_key()
-        return super(ConfirmEmailToken, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return 'Password reset token for user {user}'.format(user=self.user)
 
     class Meta:
-        verbose_name = 'Токен подтрверждения email'
+        verbose_name = 'Токен подтверждения email'
         verbose_name_plural = 'Токены подтверждения email'
+
+
