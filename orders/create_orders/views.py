@@ -144,6 +144,11 @@ class BasketView(APIView):
                     deleted_positions = True
             if deleted_positions:
                 deleted_positions_count = OrderItem.objects.filter(query).delete()[0]
+                left_position_count = OrderItem.objects.filter(order_id=basket.id).count()
+                if left_position_count == 0:
+                    Order.objects.filter(state='basket', user_id=request.user.id).delete()
+                    return JsonResponse({'status': True, 'Удалено объектов': f'{deleted_positions_count}. '
+                                                                             f'В вашей корзине пусто!'})
                 return JsonResponse({'status': True, 'Удалено объектов': deleted_positions_count})
         return JsonResponse({'status': False, 'Error': 'Не указаны все необходимые параметры'})
 
