@@ -39,3 +39,15 @@ services:
         limits:
           cpus: '0.5'
           memory: 1G
+
+  dj_project:
+    container_name: dj_project_cont
+    depends_on:
+      - pgadmin
+    restart: unless-stopped
+    build: .
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
