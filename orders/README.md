@@ -21,7 +21,18 @@
 
 ## Порядок запуска проекта
 
-1. Клонировать проект на локальный компьютер ..........
-2. Запустить проект командой ...........
-3. [Для отображения базы данных перейти по ссылки ............](http://localhost:5050/browser/)
-4. [Примеры запросов выполняемых сервисом](https://documenter.getpostman.com/view/27059553/2s93eX1YZP)
+1. Клонировать проект на локальный компьютер
+2. Находясь в директории _/python-final-diplom_ запустить проект командой: _docker-compose up -d_
+3. Для отображения базы данных [перейти по ссылки](http://localhost:5050/browser/) и создать сервер
+
+|  Host name/address   |         db          |
+|:--------------------:|:-------------------:|
+|         Port         |        5432         |
+| Maintenance database |       orders        |
+|       Username       |      alexander      |
+|       Password       |     alex_orders     |
+
+
+4. Запустить Postman локально. [Примеры запросов выполняемых сервисом](https://documenter.getpostman.com/view/27059553/2s93eX1YZP). 
+Коллекция запросов + ENVIRONMENT - Django_project_diplom, содержащее переменную _{{Token}}_, принимающую значение токена из ответа сервера на запрос 
+_{{base_django_url}}user/login_
