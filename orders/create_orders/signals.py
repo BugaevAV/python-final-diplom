@@ -1,7 +1,5 @@
 from django.dispatch import Signal, receiver
-from django.core.mail import EmailMultiAlternatives
-from django.conf import settings
-from users_auth.models import User
+from .tasks import new_order_confirm_email
 
 
 order_is_created = Signal()
@@ -9,15 +7,4 @@ order_is_created = Signal()
 
 @receiver(order_is_created)
 def new_order(user_id, order_id, **kwargs):
-    user = User.objects.get(id=user_id)
-    msg = EmailMultiAlternatives(
-        # заголовок письма:
-        f'Статус заказа id{order_id} обновлен',
-        # сообщение получателю:
-        f'Заказ id{order_id} сформирован',
-        # адрес отправителя:
-        settings.EMAIL_HOST_USER,
-        # адрес получателя:
-        [user.email]
-    )
-    msg.send()
+    new_order_confirm_email.delay(user_id=user_id, order_id=order_id)
