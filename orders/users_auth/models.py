@@ -11,18 +11,18 @@ USER_TYPES = (
 )
 
 
-class UserManager(BaseUserManager):             # создание пользовательского менеджера использующего эл почту в качестве
-                                                # идентификтора вместо имени пользователя
-    use_in_migrations = True                    # поведение во время миграции .... пока не очень понятно????
+class UserManager(BaseUserManager):
+
+    use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError('Необходимо указать email!')
-        email = self.normalize_email(email)               # приведение email  к "стандартному" виду
-        user = self.model(email=email, **extra_fields)    # создание обьекта класса
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.save()                             # user.save(using=self._db) опция в скобках используется если несколько
-        return user                             # баз данных определено в сеттингах
+        user.save()
+        return user
 
     def create_user(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
@@ -39,11 +39,11 @@ class UserManager(BaseUserManager):             # создание пользо�
         return self._create_user(email, password, **extra_fields)
 
 
-class User(AbstractUser):     # создание кастомной модели пользователя
+class User(AbstractUser):
 
-    REQUIRED_FIELDS = []                # как именно работает эта переменная?????
-    objects = UserManager()             # обьект юзерменеджера с данными для создания пользователя или супер (видимо..)
-    USERNAME_FIELD = 'email'            # идентификация по адресу эл почты
+    REQUIRED_FIELDS = []
+    objects = UserManager()
+    USERNAME_FIELD = 'email'
     email = models.EmailField('email address', unique=True)
     company = models.CharField(verbose_name='Компания', max_length=40, blank=True)
     position = models.CharField(verbose_name='Должность', max_length=40, blank=True)
