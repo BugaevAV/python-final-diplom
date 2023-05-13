@@ -13,6 +13,9 @@ from .models import *
 from .signals import *
 from .serializers import *
 
+from rest_framework.viewsets import ModelViewSet
+from django.db.models import Q
+
 
 class ContactView(APIView):
     def post(self, request, *args, **kwargs):
@@ -197,26 +200,42 @@ class PartnerOrders(APIView):
         return Response(serializer.data)
 
 
-class PartnerState(APIView):
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
-        if request.user.type != 'shop':
-            return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
-        shop = request.user.shop
-        serializer = ShopSerializer(shop)
-        return Response(serializer.data)
+# class PartnerState(APIView):
+#     def get(self, request, *args, **kwargs):
+#         if not request.user.is_authenticated:
+#             return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
+#         if request.user.type != 'shop':
+#             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
+#         shop = request.user.shop
+#         serializer = ShopSerializer(shop)
+#         return Response(serializer.data)
+#
+#     def post(self, request, *args, **kwargs):
+#         if not request.user.is_authenticated:
+#             return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
+#         if request.user.type != 'shop':
+#             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
+#         state = request.data.get('state')
+#         if state:
+#             try:
+#                 Shop.objects.filter(user_id=request.user.id).update(state=strtobool(state))
+#                 return JsonResponse({'State changed to': state})
+#             except ValueError as error:
+#                 return JsonResponse({'Status': False, 'Errors': str(error)})
+#         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
-    def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
+
+class PartnerStateSet(ModelViewSet):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
-        if request.user.type != 'shop':
+        if self.request.user.type != 'shop':
             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
-        state = request.data.get('state')
-        if state:
-            try:
-                Shop.objects.filter(user_id=request.user.id).update(state=strtobool(state))
-                return JsonResponse({'State changed to': state})
-            except ValueError as error:
-                return JsonResponse({'Status': False, 'Errors': str(error)})
-        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+
+        return Shop.objects.all()
+    serializer_class = ShopSerializer
+
+
+
+
+
