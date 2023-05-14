@@ -1,5 +1,5 @@
 from distutils.util import strtobool
-
+from drf_spectacular.utils import extend_schema
 import ujson
 from django.http import JsonResponse
 from django.db.models import Q, F, Sum
@@ -17,6 +17,7 @@ from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q
 
 
+@extend_schema(tags=['Пользователи'], responses=ContactSerializer)
 class ContactView(APIView):
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
