@@ -14,6 +14,6 @@ urlpatterns = [
     path('login', UserLogin.as_view(), name='user_login'),
     path('', include(router.urls)),
     # path('details', UserDetails.as_view(), name='user_details'),
-    path('password_reset', reset_password_request_token, name='password_reset'),
-    path('password_reset/confirm', reset_password_confirm, name='password_reset_confirm')
+    path('password_reset', MyResetPasswordRequestToken.as_view(), name='password_reset'),
+    path('password_reset/confirm', MyResetPasswordConfirm.as_view(), name='password_reset_confirm')
 ]
