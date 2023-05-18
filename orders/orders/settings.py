@@ -171,8 +171,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'API service for ordering goods for retails',
-    'DESCRIPTION': 'The application is designed to automate purchases in retails',
+    'TITLE': 'API сервис заказа товаров в розничных сетях',
+    'DESCRIPTION': 'Приложение для автоматизации закупок в рознице',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False
 }

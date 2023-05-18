@@ -1,79 +1,61 @@
 from distutils.util import strtobool
-from drf_spectacular.utils import extend_schema
 import ujson
 from django.http import JsonResponse
 from django.db.models import Q, F, Sum
 from django.db import IntegrityError
+from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample
 from ordering_goods.models import Shop
 from ordering_goods.serializers import ShopSerializer
 from .models import *
 from .signals import *
 from .serializers import *
 
-from rest_framework.viewsets import ModelViewSet
-from django.db.models import Q
+
+@extend_schema(tags=['Пользователи'])
+@extend_schema_view(
+    create=extend_schema(summary='Добавление контактов пользователя',
+                         request=ContactSerializer,
+                         examples=[OpenApiExample("Пример добавления контактов пользователя",
+                                                  value=
+                                                    {
+                                                        'city': 'Санкт-Петербург',
+                                                        'street': 'Комендантский проспект',
+                                                        'house': '21',
+                                                        'building': '2',
+                                                        'apartment': '229',
+                                                        'phone': '+7 900 800 70 60'
+                                                    }, status_codes=[str(status.HTTP_201_CREATED)])]),
+    partial_update=extend_schema(summary='Частичное изменение контактов',
+                                 examples=[OpenApiExample("На примере изменения номера телефона",
+                                                  value=
+                                                    {
+                                                        'phone': '+7 999 999 99 99'
+                                                    }, status_codes=[str(status.HTTP_201_CREATED)])]),
+    list=extend_schema(summary='Получение списка контактов'),
+    retrieve=extend_schema(summary='Получение контактных данных пользователя по id'),
+    destroy=extend_schema(summary='Удаление контактных данных пользователя по id'))
+class ContactViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', ]
+
+    def create(self, request, *args, **kwargs):
+        request.data.update({'user': request.user.id})
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({'status': True})
+        else:
+            return Response({'status': False, 'Error': serializer.errors})
 
 
-@extend_schema(tags=['Пользователи'], responses=ContactSerializer)
-class ContactView(APIView):
-    def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'status': False, 'Error': 'Необходимо авторизоваться'})
-
-        if {'city', 'street', 'phone'}.issubset(request.data):
-            request.data._mutable = True
-            request.data.update({'user': request.user.id})
-            serializer = ContactSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse({'status': True})
-            else:
-                return JsonResponse({'status': False, 'Error': serializer.errors})
-        return JsonResponse({'status': False, 'Errors': 'Не указаны все необходимые аргументы'})
-
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'status': False, 'Error': 'Необходимо авторизоваться'})
-        contact = Contact.objects.filter(user_id=request.user.id)
-        serializer = ContactSerializer(contact, many=True)
-        return Response(serializer.data)
-
-    def put(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'status': False, 'Error': 'Необходимо авторизоваться'})
-        if 'id' in request.data:
-            if request.data['id'].isdigit():
-                contact = Contact.objects.filter(id=request.data['id'], user_id=request.user.id).first()
-                if contact:
-                    serializer = ContactSerializer(contact, data=request.data, partial=True)
-                    if serializer.is_valid():
-                        serializer.save()
-                        return JsonResponse({'status': True})
-                    else:
-                        return JsonResponse({'status': False, 'Errors': serializer.errors})
-        return JsonResponse({'status': False, 'Error': 'Не указаны все необходимые агрументы'})
-
-    def delete(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'status': False, 'Error': 'Необходимо авторизоваться'})
-        items_string = request.data.get('items')
-        if items_string:
-            items_list = items_string.split(',')
-            query = Q()
-            objects_deleted = False
-            for contact_id in items_list:
-                if contact_id.isdigit():
-                    query = query | Q(user_id=request.user.id, id=contact_id)
-                    objects_deleted = True
-            if objects_deleted:
-                count = Contact.objects.filter(query).delete()[0]
-                return JsonResponse({'status': True, 'Удалено контактов': count})
-        return JsonResponse({'status': False, 'Error': 'Не указаны все необходимые аргумены'})
-
-
+@extend_schema(tags=['Заказы'])
 class BasketView(APIView):
 
     def get(self, request, *args, **kwargs):
@@ -156,7 +138,7 @@ class BasketView(APIView):
                 return JsonResponse({'status': True, 'Удалено объектов': deleted_positions_count})
         return JsonResponse({'status': False, 'Error': 'Не указаны все необходимые параметры'})
 
-
+@extend_schema(tags=['Заказы'])
 class OrderView(APIView):
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -184,7 +166,7 @@ class OrderView(APIView):
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
 
-
+@extend_schema(tags=['Заказы'])
 class PartnerOrders(APIView):
 
     def get(self, request, *args, **kwargs):
@@ -201,42 +183,46 @@ class PartnerOrders(APIView):
         return Response(serializer.data)
 
 
-# class PartnerState(APIView):
-#     def get(self, request, *args, **kwargs):
-#         if not request.user.is_authenticated:
-#             return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
-#         if request.user.type != 'shop':
-#             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
-#         shop = request.user.shop
-#         serializer = ShopSerializer(shop)
-#         return Response(serializer.data)
-#
-#     def post(self, request, *args, **kwargs):
-#         if not request.user.is_authenticated:
-#             return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
-#         if request.user.type != 'shop':
-#             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
-#         state = request.data.get('state')
-#         if state:
-#             try:
-#                 Shop.objects.filter(user_id=request.user.id).update(state=strtobool(state))
-#                 return JsonResponse({'State changed to': state})
-#             except ValueError as error:
-#                 return JsonResponse({'Status': False, 'Errors': str(error)})
-#         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
-
-
+@extend_schema(tags=['Поставщики'])
+@extend_schema_view(
+    retrieve=extend_schema(
+        summary='Получение статуса поставщика по id'
+    ),
+    list=extend_schema(
+        summary='Получение всех активных поставщиков'
+    ),
+    create=extend_schema(
+        summary='Смена статуса поставщика',
+        examples=[OpenApiExample('Пример смены статуса поставщика',
+                                 value={'state': 'on'})]
+    )
+)
 class PartnerStateSet(ModelViewSet):
-    def get_queryset(self):
-        if not self.request.user.is_authenticated:
-            return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'})
-        if self.request.user.type != 'shop':
-            return JsonResponse({'Status': False, 'Error': 'Только для магазинов'})
-
-        return Shop.objects.all()
+    queryset = Shop.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ShopSerializer
+    http_method_names = ['post', 'get']
+ 
+    def retrieve(self, request, *args, **kwargs):
+        if self.request.user.type != 'shop':
+            return Response({'Status': False, 'Error': 'Только для магазинов'})
+        return super().retrieve(request, *args, **kwargs)
 
-
-
-
-
+    def list(self, request, *args, **kwargs):
+        if self.request.user.type != 'shop':
+            return Response({'Status': False, 'Error': 'Только для магазинов'})
+        queryset = Shop.objects.filter(state=True)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
+    
+    def create(self, request, *args, **kwargs):
+        if self.request.user.type != 'shop':
+            return Response({'Status': False, 'Error': 'Только для магазинов'})
+        state = request.data.get('state')
+        if state:
+            try:
+                Shop.objects.filter(user_id=request.user.id).update(state=strtobool(state))
+                return Response({'State changed to': state})
+            except ValueError as error:
+                return Response({'Status': False, 'Errors': str(error)})
+        return Response({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
