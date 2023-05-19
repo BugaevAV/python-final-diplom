@@ -12,20 +12,25 @@ from .serializers import *
 from .models import *
 from .tasks import price_loader
 
+
 @extend_schema(tags=['Поставщики'])
 class CategoryView(ListAPIView):
-
+    permission_classes=[IsAuthenticated]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+
 @extend_schema(tags=['Поставщики'])
 class ShopView(ListAPIView):
-
+    permission_classes=[IsAuthenticated]
     queryset = Shop.objects.filter(state=True)
     serializer_class = ShopSerializer
 
+
 @extend_schema(tags=['Поставщики'])
 class ProductInfoView(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         query = Q(shop__state=True)
         shop_id = request.query_params.get('shop_id')

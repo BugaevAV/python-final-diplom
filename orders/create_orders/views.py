@@ -57,6 +57,7 @@ class ContactViewSet(ModelViewSet):
 
 @extend_schema(tags=['Заказы'])
 class BasketView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -140,6 +141,8 @@ class BasketView(APIView):
 
 @extend_schema(tags=['Заказы'])
 class OrderView(APIView):
+    permission_classes=[IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse({'status': False, 'Error': 'Необходимо авторизоваться'})
@@ -168,6 +171,7 @@ class OrderView(APIView):
 
 @extend_schema(tags=['Заказы'])
 class PartnerOrders(APIView):
+    permission_classes=[IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -203,14 +207,7 @@ class PartnerStateSet(ModelViewSet):
     serializer_class = ShopSerializer
     http_method_names = ['post', 'get']
  
-    def retrieve(self, request, *args, **kwargs):
-        if self.request.user.type != 'shop':
-            return Response({'Status': False, 'Error': 'Только для магазинов'})
-        return super().retrieve(request, *args, **kwargs)
-
     def list(self, request, *args, **kwargs):
-        if self.request.user.type != 'shop':
-            return Response({'Status': False, 'Error': 'Только для магазинов'})
         queryset = Shop.objects.filter(state=True)
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)

@@ -34,6 +34,7 @@ from .signals import user_is_registered
                                                      'type': 'shop'
                                                    }, status_codes=[str(status.HTTP_201_CREATED)])]))
 class UserRegister(ModelViewSet):
+    authentication_classes=()
     serializer_class = UserSerializer
     http_method_names = ['post', ]
 
@@ -66,6 +67,7 @@ class UserRegister(ModelViewSet):
                                                 value={'email': 'salegroup78@mail.ru', 'token': 'токен_из_почты'},
                                                 status_codes=[str(status.HTTP_201_CREATED)])]))
 class EmailConfirmation(CreateAPIView):
+    authentication_classes=()
     serializer_class = UserSerializer
     queryset = User.objects.all() 
 
@@ -91,6 +93,7 @@ class EmailConfirmation(CreateAPIView):
                                                 value={'email': 'salegroup78@mail.ru', 'password': 'Ivan1234'},
                                                 status_codes=[str(status.HTTP_201_CREATED)])]))
 class UserLogin(CreateAPIView):
+    authentication_classes=()
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
