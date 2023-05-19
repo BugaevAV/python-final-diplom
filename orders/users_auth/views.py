@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample
 from django_rest_passwordreset.views import ResetPasswordConfirm, ResetPasswordRequestToken
 from .serializers import *
@@ -159,7 +160,8 @@ class UserDetailsSet(viewsets.ReadOnlyModelViewSet):
     )    
 )
 class MyResetPasswordRequestToken(ResetPasswordRequestToken):
-    pass
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'reset_password'
 
 
 @extend_schema(tags=['Пользователи'])
