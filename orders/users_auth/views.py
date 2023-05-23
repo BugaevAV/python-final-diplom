@@ -42,7 +42,7 @@ class UserRegister(ModelViewSet):
     def create(self, request, *args, **kwargs):
         password = self.request.data.get('password', None)
         if not password:
-            return Response({'error': 'Не указан пароль пользователя'})
+            return Response({'error': 'Не указан пароль пользователя'}, status=400)
         try:
             validate_password(password)
         except Exception as password_error:
@@ -56,7 +56,7 @@ class UserRegister(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             user = serializer.save()
             user_is_registered.send(sender=self.__class__, user_id=user.pk)     
-            return Response({'status': 'Создан новый пользователь'})
+            return Response({'status': 'Создан новый пользователь'}, status=201)
 
 
 @extend_schema(tags=['Пользователи'])
@@ -105,7 +105,7 @@ class UserLogin(CreateAPIView):
                 if user.is_active:
                     token, _ = Token.objects.get_or_create(user=user)
                     return Response({'status': True, 'Token': token.key})
-            return Response({'status': False, 'Errors': 'Ну удалось авторизовать пользователя'})
+            return Response({'status': False, 'Errors': 'Нe удалось авторизовать пользователя'}, status=400)
         return Response({'status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
@@ -115,6 +115,7 @@ class UserLogin(CreateAPIView):
     retrieve=extend_schema(summary='Получение детальной информации о пользователе по id'),
 )
 class UserDetailsSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
@@ -127,7 +128,7 @@ class UserDetailsSet(viewsets.ReadOnlyModelViewSet):
                            value={'password': 'Ivan1234NEW'},
                            status_codes=[status.HTTP_200_OK])])
     @action(detail=True, methods=['POST'])
-    def change(self, request, *args, **kwargs):
+    def change(self, request, pk=None): 
         if 'password' in self.request.data:
             try:
                 validate_password(self.request.data['password'])
@@ -138,7 +139,8 @@ class UserDetailsSet(viewsets.ReadOnlyModelViewSet):
                     return Response({'status': False, 'errors': {'password': errors_array}})
             else:
                 self.request.data["password"] = make_password(self.request.data["password"])
-        serializer = UserSerializer(self.request.user, data=self.request.data, partial=True)
+        details = self.get_object()        
+        serializer = UserSerializer(details, data=self.request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'status': True})
