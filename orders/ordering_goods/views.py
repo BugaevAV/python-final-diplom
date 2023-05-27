@@ -61,7 +61,7 @@ class PartnerUpdateAPIVIew(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         if request.user.type != 'shop':
-            return Response({'status': False, 'Error': 'Только для магазинаов'})
+            return Response({'status': False, 'Error': 'Только для магазинаов'}, status=403)
         url = request.data.get('url')
         if url:
             validate_url = URLValidator()
