@@ -28,7 +28,7 @@ from .signals import user_is_registered
                                                    {
                                                      'first_name': 'Иван',
                                                      'last_name': 'Иванов',
-                                                     'email': 'salegroup78@mail.ru',
+                                                     'email': 'ваш_адрес_эл_почты',
                                                      'password': 'Ivan1234',
                                                      'company': 'Рога&Копыта',
                                                      'position': 'Директор',
