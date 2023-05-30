@@ -40,17 +40,18 @@ services:
           cpus: '0.5'
           memory: 1G
 
-#  dj_project:
-#    container_name: dj_project_cont
-#    depends_on:
-#      - pgadmin
-#    restart: unless-stopped
-#    build: .
-#    ports:
-#      - "8000:8000"
-#    command: >
-#      sh -c "python manage.py migrate &&
-#             python manage.py runserver 0.0.0.0:8000"
+  dj_project:
+    container_name: dj_project_cont
+    depends_on:
+      - pgadmin
+    restart: unless-stopped
+    build: .
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate &&
+                python manage.py test &&
+                python manage.py runserver 0.0.0.0:8000"
 
   redis:
     container_name: redis_cont
@@ -59,11 +60,11 @@ services:
       - "6379:6379"
     depends_on:
       - pgadmin
-#      - dj_project
+      - dj_project
     restart: always
-#
-#  worker:
-#    container_name: worker_cont
-#    restart: always
-#    build: .
-#    command: ['celery', '-A', 'orders', 'worker', '-l', 'info']
+
+  worker:
+    container_name: worker_cont
+    restart: always
+    build: .
+    command: ['celery', '-A', 'orders', 'worker', '-l', 'info']
