@@ -93,7 +93,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': '127.0.0.1',       # для контейнера "db"
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
@@ -165,14 +165,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_USE_TLS = True
 
 EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_HOST_USER = 'salegroup78@mail.ru'
+EMAIL_HOST_USER = 'адрес_электронной_почты'
 EMAIL_HOST_PASSWORD = '1JhcBJGDGkiZdAPHb02X'
 EMAIL_PORT = '465'
 EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-REDIS_HOST = "127.0.0.1"   # для контейнера "redis"
+REDIS_HOST = "redis"
 REDIS_PORT = "6379"
 CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
